@@ -52,7 +52,7 @@ export default function Column({ columnId, label, emoji, headerColor }: ColumnPr
     const index = list.findIndex((n) => n.id === noteId);
     if (index !== -1) {
       const existing = list.get(index);
-      list.set(index, { ...existing, text });
+      if (existing) list.set(index, { ...existing, text });
     }
   }, []);
 
@@ -62,9 +62,11 @@ export default function Column({ columnId, label, emoji, headerColor }: ColumnPr
       const index = list.findIndex((n) => n.id === noteId);
       if (index !== -1) {
         const note = list.get(index);
-        const current = note.reactions[reactionEmoji] ?? 0;
-        const reactions = { ...note.reactions, [reactionEmoji]: current + 1 };
-        list.set(index, { ...note, reactions });
+        if (note) {
+          const current = note.reactions[reactionEmoji] ?? 0;
+          const reactions = { ...note.reactions, [reactionEmoji]: current + 1 };
+          list.set(index, { ...note, reactions });
+        }
       }
     },
     []
@@ -79,6 +81,7 @@ export default function Column({ columnId, label, emoji, headerColor }: ColumnPr
       const draggedIndex = allNotes.findIndex((n) => n.id === draggedId);
       if (draggedIndex === -1) return;
       const dragged = list.get(draggedIndex);
+      if (!dragged) return;
 
       // Sorted notes in target column excluding the dragged note
       const colNotes = allNotes
@@ -125,7 +128,7 @@ export default function Column({ columnId, label, emoji, headerColor }: ColumnPr
         sorted.splice(Math.max(0, insertAt), 0, { ...dragged, column: columnId });
         sorted.forEach((note, i) => {
           const idx = list.findIndex((n) => n.id === note.id);
-          if (idx !== -1) list.set(idx, { ...list.get(idx), column: columnId, order: (i + 1) * 1000 });
+          if (idx !== -1) { const existing = list.get(idx); if (existing) list.set(idx, { ...existing, column: columnId, order: (i + 1) * 1000 }); }
         });
         return;
       }
